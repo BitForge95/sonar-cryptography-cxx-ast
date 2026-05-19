@@ -7,13 +7,26 @@
     <groupId>org.pqca.cbomkit</groupId>
     <artifactId>sonar-cryptography-cxx-ast</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>Sonar Cryptography C++ AST Parser</name>
-    <description>PoC for extracting Cryptographic Bill of Materials (CBOM) from C/C++ via AST</description>
+    <name>Sonar Cryptography C++ AST Scanner</name>
+    <description>PoC for extracting CBOM data from C/C++ using Eclipse CDT</description>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <dependencies>
+        <!-- 
+          Using the Joern mirror of eclipse-cdt-core. 
+          Standard Eclipse P2 repos require Tycho and OSGi overhead. 
+          This mirror isolates just the headless AST parser, perfect for our CLI-based analysis.
+        -->
+        <dependency>
+            <groupId>io.joern</groupId>
+            <artifactId>eclipse-cdt-core</artifactId>
+            <version>8.5.0.202410191453+2</version>
+        </dependency>
+    </dependencies>
 
 </project>

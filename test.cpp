@@ -17,10 +17,18 @@ void encrypt_data(const unsigned char* key, const unsigned char* iv) {
         std::cout << "Context initialized with AES-256-CBC" << std::endl;
     }
     
-    // TODO: Add context cleanup
+    // Clean up the context to prevent memory leaks
+    EVP_CIPHER_CTX_free(ctx);
 }
 
 int main(int argc, char* argv[]) {
-    std::cout << "Crypto baseline" << std::endl;
+    // Dummy 256-bit key and 128-bit IV for static analysis testing.
+    // In a real app, these should be securely derived.
+    unsigned char key[32] = {0x01, 0x02, 0x03, 0x04}; 
+    unsigned char iv[16]  = {0x0A, 0x0B, 0x0C, 0x0D};  
+    
+    encrypt_data(key, iv);
+    
+    return 0;
     return 0;
 }

@@ -10,7 +10,6 @@ void encrypt_data(const unsigned char* key, const unsigned char* iv) {
     }
 
     // Target for AST scanner: EVP_EncryptInit_ex
-    // Hardcoding AES-256-CBC for this PoC. 
     if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr, key, iv)) {
         std::cerr << "Encryption init failed" << std::endl;
     } else {
@@ -29,6 +28,5 @@ int main(int argc, char* argv[]) {
     
     encrypt_data(key, iv);
     
-    return 0;
     return 0;
 }

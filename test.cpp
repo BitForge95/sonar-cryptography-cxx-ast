@@ -9,7 +9,15 @@ void encrypt_data(const unsigned char* key, const unsigned char* iv) {
         return;
     }
 
-    // Target for AST scanner: EVP_EncryptInit_ex
+    /* 
+     * CBOMKIT TARGET:
+     * Function Call: EVP_EncryptInit_ex
+     * Arg 0 (Context): ctx
+     * Arg 1 (Algorithm): EVP_aes_256_cbc() -> Our CDT parser must extract this node!
+     * Arg 2 (Engine): nullptr
+     * Arg 3 (Key): key
+     * Arg 4 (IV): iv
+     */
     if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr, key, iv)) {
         std::cerr << "Encryption init failed" << std::endl;
     } else {

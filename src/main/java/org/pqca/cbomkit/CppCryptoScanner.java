@@ -1,5 +1,7 @@
 package org.pqca.cbomkit;
 
+import org.eclipse.cdt.core.dom.ast.ASTVisitor;
+import org.eclipse.cdt.core.dom.ast.IASTExpression;
 import org.eclipse.cdt.core.dom.ast.IASTTranslationUnit;
 import org.eclipse.cdt.core.dom.ast.gnu.cpp.GPPLanguage;
 import org.eclipse.cdt.core.parser.DefaultLogService;
@@ -47,9 +49,22 @@ public class CppCryptoScanner {
                 new DefaultLogService()
         );
 
-        System.out.println("AST generated successfully");
-        System.out.println("Root Node: " + translationUnit.getClass().getSimpleName());
-        
-        // TODO: Implement ASTVisitor to traverse the tree and extract OpenSSL nodes
+       ASTVisitor visitor = new ASTVisitor() {
+            {
+                // Explicitly tell the walker we only care about expression trees
+                shouldVisitExpressions = true; 
+            }
+
+            @Override
+            public int visit(IASTExpression expression) {
+                // Hook method called for every expression encountered in the C++ file
+                // TODO: Isolate function calls here
+                return PROCESS_CONTINUE;
+            }
+        };
+
+        // Fire the visitor across the entire translation unit
+        translationUnit.accept(visitor);
+        System.out.println("AST traversal complete.");
     }
 }

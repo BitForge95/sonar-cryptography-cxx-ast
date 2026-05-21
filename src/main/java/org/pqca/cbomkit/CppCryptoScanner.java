@@ -34,10 +34,16 @@ public class CppCryptoScanner {
             this.filePath = filePath;
             this.lineNumber = lineNumber;
         }
+
+        public String toJson() {
+            return String.format(
+                "{\n  \"ruleId\": \"%s\",\n  \"apiCall\": \"%s\",\n  \"filePath\": \"%s\",\n  \"lineNumber\": %d\n}",
+                ruleId, apiCall, filePath, lineNumber
+            );
+        }
     }
 
     public static void main(String[] args) {
-        System.out.println("Initializing C++ AST Scanner...");
         String targetFile = "test.cpp";
         
         if (!new File(targetFile).exists()) {
@@ -47,13 +53,10 @@ public class CppCryptoScanner {
         
         // 1. Initialize CDT Headless Parser components
         FileContent fileContent = FileContent.createForExternalFileLocation(targetFile);
-        
         Map<String, String> macroDefinitions = new HashMap<>();
         macroDefinitions.put("__cplusplus", "201703L");
-
-        String[] includeSearchPaths = new String[0]; 
         
-        ScannerInfo scannerInfo = new ScannerInfo(macroDefinitions, includeSearchPaths);
+        ScannerInfo scannerInfo = new ScannerInfo(macroDefinitions, new String[0]);
         IncludeFileContentProvider provider = IncludeFileContentProvider.getEmptyFilesProvider();
 
         // GPPLanguage specifies that we are parsing C++
@@ -98,5 +101,10 @@ public class CppCryptoScanner {
         };
 
         translationUnit.accept(visitor);
+
+        // Output Findingss
+        for (CbomFinding finding : findingsList) {
+            System.out.println(finding.toJson());
+        }
     }
 }

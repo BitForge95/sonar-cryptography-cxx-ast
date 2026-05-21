@@ -1,0 +1,21 @@
+{
+  "ruleId": "CPP_OPENSSL_EVP_ENCRYPT",
+  "name": "Detect OpenSSL EVP_EncryptInit_ex Usage",
+  "description": "Identifies the initialization of OpenSSL EVP encryption routines to extract cryptographic assets for CBOM generation.",
+  "language": "cpp",
+  "severity": "INFO",
+  "type": "CRYPTOGRAPHY",
+  "detection": {
+    "framework": "OpenSSL",
+    "nodeType": "FunctionCall",
+    "targetSignature": "EVP_EncryptInit_ex",
+    "argumentMappings": {
+      "context": 0,
+      "algorithm": 1,
+      "engine": 2,
+      "key": 3,
+      "iv": 4
+    }
+  },
+  "tags": ["cbom", "crypto", "openssl"]
+}

@@ -1,5 +1,8 @@
 package org.pqca.cbomkit;
 
+import org.eclipse.cdt.core.dom.ast.IASTTranslationUnit;
+import org.eclipse.cdt.core.dom.ast.gnu.cpp.GPPLanguage;
+import org.eclipse.cdt.core.parser.DefaultLogService;
 import org.eclipse.cdt.core.parser.FileContent;
 import org.eclipse.cdt.core.parser.IncludeFileContentProvider;
 import org.eclipse.cdt.core.parser.ScannerInfo;
@@ -34,6 +37,19 @@ public class CppCryptoScanner {
         ScannerInfo scannerInfo = new ScannerInfo(macroDefinitions, includeSearchPaths);
         IncludeFileContentProvider provider = IncludeFileContentProvider.getEmptyFilesProvider();
 
-        // TODO: Generate Translation Unit from the parser
+        // GPPLanguage specifies that we are parsing C++
+        IASTTranslationUnit translationUnit = GPPLanguage.getDefault().getASTTranslationUnit(
+                fileContent, 
+                scannerInfo, 
+                provider, 
+                null, 
+                0, 
+                new DefaultLogService()
+        );
+
+        System.out.println("AST generated successfully");
+        System.out.println("Root Node: " + translationUnit.getClass().getSimpleName());
+        
+        // TODO: Implement ASTVisitor to traverse the tree and extract OpenSSL nodes
     }
 }

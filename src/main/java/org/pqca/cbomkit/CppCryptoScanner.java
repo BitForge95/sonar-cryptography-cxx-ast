@@ -102,9 +102,19 @@ public class CppCryptoScanner {
 
         translationUnit.accept(visitor);
 
-        // Output Findingss
-        for (CbomFinding finding : findingsList) {
-            System.out.println(finding.toJson());
+        // Build CycloneDX CBOM Wrappeer
+        System.out.println("{");
+        System.out.println("  \"bomFormat\": \"CycloneDX\",");
+        System.out.println("  \"specVersion\": \"1.5\",");
+        System.out.println("  \"components\": [");
+        
+        for (int i = 0; i < findingsList.size(); i++) {
+            System.out.print(findingsList.get(i).toJson());
+            if (i < findingsList.size() - 1) System.out.println(",");
+            else System.out.println();
         }
+        
+        System.out.println("  ]");
+        System.out.println("}");
     }
 }

@@ -27,6 +27,8 @@ public class CppCryptoScanner {
         FileContent fileContent = FileContent.createForExternalFileLocation(targetFile);
         
         Map<String, String> macroDefinitions = new HashMap<>();
+        macroDefinitions.put("__cplusplus", "201703L");
+
         String[] includeSearchPaths = new String[0]; 
         
         ScannerInfo scannerInfo = new ScannerInfo(macroDefinitions, includeSearchPaths);

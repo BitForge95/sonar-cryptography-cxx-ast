@@ -2,6 +2,7 @@ package org.pqca.cbomkit;
 
 import org.eclipse.cdt.core.dom.ast.ASTVisitor;
 import org.eclipse.cdt.core.dom.ast.IASTExpression;
+import org.eclipse.cdt.core.dom.ast.IASTFunctionCallExpression;
 import org.eclipse.cdt.core.dom.ast.IASTTranslationUnit;
 import org.eclipse.cdt.core.dom.ast.gnu.cpp.GPPLanguage;
 import org.eclipse.cdt.core.parser.DefaultLogService;
@@ -57,14 +58,24 @@ public class CppCryptoScanner {
 
             @Override
             public int visit(IASTExpression expression) {
-                // Hook method called for every expression encountered in the C++ file
-                // TODO: Isolate function calls here
+                // Check if the current node is a function call
+                if (expression instanceof IASTFunctionCallExpression) {
+                    IASTFunctionCallExpression callExpr = (IASTFunctionCallExpression) expression;
+                    IASTExpression nameExpr = callExpr.getFunctionNameExpression();
+                    
+                    String signature = nameExpr.getRawSignature();
+                    
+                    // Match the targeted cryptographic API call
+                    if ("EVP_EncryptInit_ex".equals(signature)) {
+                        int line = callExpr.getFileLocation().getStartingLineNumber();
+                        System.out.println("Match found! Captured target API: " + signature + " at line " + line);
+                        // TODO: Map to an internal data object for serialization
+                    }
+                }
                 return PROCESS_CONTINUE;
             }
         };
 
-        // Fire the visitor across the entire translation unit
         translationUnit.accept(visitor);
-        System.out.println("AST traversal complete.");
     }
 }

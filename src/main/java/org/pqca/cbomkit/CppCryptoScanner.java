@@ -11,7 +11,9 @@ import org.eclipse.cdt.core.parser.IncludeFileContentProvider;
 import org.eclipse.cdt.core.parser.ScannerInfo;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -19,6 +21,20 @@ import java.util.Map;
  * of C/C++ source files to detect cryptographic primitives.
  */
 public class CppCryptoScanner {
+
+    static class CbomFinding {
+        String ruleId;
+        String apiCall;
+        String filePath;
+        int lineNumber;
+
+        CbomFinding(String ruleId, String apiCall, String filePath, int lineNumber) {
+            this.ruleId = ruleId;
+            this.apiCall = apiCall;
+            this.filePath = filePath;
+            this.lineNumber = lineNumber;
+        }
+    }
 
     public static void main(String[] args) {
         System.out.println("Initializing C++ AST Scanner...");
@@ -50,6 +66,8 @@ public class CppCryptoScanner {
                 new DefaultLogService()
         );
 
+        final List<CbomFinding> findingsList = new ArrayList<>();
+
        ASTVisitor visitor = new ASTVisitor() {
             {
                 // Explicitly tell the walker we only care about expression trees
@@ -67,9 +85,12 @@ public class CppCryptoScanner {
                     
                     // Match the targeted cryptographic API call
                     if ("EVP_EncryptInit_ex".equals(signature)) {
-                        int line = callExpr.getFileLocation().getStartingLineNumber();
-                        System.out.println("Match found! Captured target API: " + signature + " at line " + line);
-                        // TODO: Map to an internal data object for serialization
+                        findingsList.add(new CbomFinding(
+                            "CPP_OPENSSL_EVP_ENCRYPT",
+                            signature,
+                            targetFile,
+                            callExpr.getFileLocation().getStartingLineNumber()
+                        ));
                     }
                 }
                 return PROCESS_CONTINUE;

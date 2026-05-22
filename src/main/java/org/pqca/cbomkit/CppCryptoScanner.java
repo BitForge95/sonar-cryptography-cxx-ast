@@ -9,6 +9,7 @@ import org.eclipse.cdt.core.parser.DefaultLogService;
 import org.eclipse.cdt.core.parser.FileContent;
 import org.eclipse.cdt.core.parser.IncludeFileContentProvider;
 import org.eclipse.cdt.core.parser.ScannerInfo;
+import org.eclipse.core.runtime.CoreException;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -51,70 +52,79 @@ public class CppCryptoScanner {
             return;
         }
         
-        // 1. Initialize CDT Headless Parser components
-        FileContent fileContent = FileContent.createForExternalFileLocation(targetFile);
-        Map<String, String> macroDefinitions = new HashMap<>();
-        macroDefinitions.put("__cplusplus", "201703L");
-        
-        ScannerInfo scannerInfo = new ScannerInfo(macroDefinitions, new String[0]);
-        IncludeFileContentProvider provider = IncludeFileContentProvider.getEmptyFilesProvider();
+        try {
+            // 1. Initialize CDT Headless Parser components
+            FileContent fileContent = FileContent.createForExternalFileLocation(targetFile);
+            Map<String, String> macroDefinitions = new HashMap<>();
+            macroDefinitions.put("__cplusplus", "201703L");
+            
+            ScannerInfo scannerInfo = new ScannerInfo(macroDefinitions, new String[0]);
+            IncludeFileContentProvider provider = IncludeFileContentProvider.getEmptyFilesProvider();
 
-        // GPPLanguage specifies that we are parsing C++
-        IASTTranslationUnit translationUnit = GPPLanguage.getDefault().getASTTranslationUnit(
-                fileContent, 
-                scannerInfo, 
-                provider, 
-                null, 
-                0, 
-                new DefaultLogService()
-        );
+            // GPPLanguage specifies that we are parsing C++
+            IASTTranslationUnit translationUnit = GPPLanguage.getDefault().getASTTranslationUnit(
+                    fileContent, 
+                    scannerInfo, 
+                    provider, 
+                    null, 
+                    0, 
+                    new DefaultLogService()
+            );
 
-        final List<CbomFinding> findingsList = new ArrayList<>();
+            final List<CbomFinding> findingsList = new ArrayList<>();
 
-       ASTVisitor visitor = new ASTVisitor() {
-            {
-                // Explicitly tell the walker we only care about expression trees
-                shouldVisitExpressions = true; 
-            }
-
-            @Override
-            public int visit(IASTExpression expression) {
-                // Check if the current node is a function call
-                if (expression instanceof IASTFunctionCallExpression) {
-                    IASTFunctionCallExpression callExpr = (IASTFunctionCallExpression) expression;
-                    IASTExpression nameExpr = callExpr.getFunctionNameExpression();
-                    
-                    String signature = nameExpr.getRawSignature();
-                    
-                    // Match the targeted cryptographic API call
-                    if ("EVP_EncryptInit_ex".equals(signature)) {
-                        findingsList.add(new CbomFinding(
-                            "CPP_OPENSSL_EVP_ENCRYPT",
-                            signature,
-                            targetFile,
-                            callExpr.getFileLocation().getStartingLineNumber()
-                        ));
-                    }
+           ASTVisitor visitor = new ASTVisitor() {
+                {
+                    // Explicitly tell the walker we only care about expression trees
+                    shouldVisitExpressions = true; 
                 }
-                return PROCESS_CONTINUE;
+
+                @Override
+                public int visit(IASTExpression expression) {
+                    // Check if the current node is a function call
+                    if (expression instanceof IASTFunctionCallExpression) {
+                        IASTFunctionCallExpression callExpr = (IASTFunctionCallExpression) expression;
+                        IASTExpression nameExpr = callExpr.getFunctionNameExpression();
+                        
+                        String signature = nameExpr.getRawSignature();
+                        
+                        // Match the targeted cryptographic API call
+                        if ("EVP_EncryptInit_ex".equals(signature)) {
+                            findingsList.add(new CbomFinding(
+                                "CPP_OPENSSL_EVP_ENCRYPT",
+                                signature,
+                                targetFile,
+                                callExpr.getFileLocation().getStartingLineNumber()
+                            ));
+                        }
+                    }
+                    return PROCESS_CONTINUE;
+                }
+            };
+
+            translationUnit.accept(visitor);
+
+            // Build CycloneDX CBOM Wrappeer
+            System.out.println("{");
+            System.out.println("  \"bomFormat\": \"CycloneDX\",");
+            System.out.println("  \"specVersion\": \"1.5\",");
+            System.out.println("  \"components\": [");
+            
+            for (int i = 0; i < findingsList.size(); i++) {
+                System.out.print(findingsList.get(i).toJson());
+                if (i < findingsList.size() - 1) System.out.println(",");
+                else System.out.println();
             }
-        };
-
-        translationUnit.accept(visitor);
-
-        // Build CycloneDX CBOM Wrappeer
-        System.out.println("{");
-        System.out.println("  \"bomFormat\": \"CycloneDX\",");
-        System.out.println("  \"specVersion\": \"1.5\",");
-        System.out.println("  \"components\": [");
-        
-        for (int i = 0; i < findingsList.size(); i++) {
-            System.out.print(findingsList.get(i).toJson());
-            if (i < findingsList.size() - 1) System.out.println(",");
-            else System.out.println();
+            
+            System.out.println("  ]");
+            System.out.println("}");
+            
+        } catch (CoreException e) {
+            System.err.println("CDT Parsing Error: Failed to generate AST Translation Unit.");
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.err.println("Unexpected execution error occurred.");
+            e.printStackTrace();
         }
-        
-        System.out.println("  ]");
-        System.out.println("}");
     }
 }

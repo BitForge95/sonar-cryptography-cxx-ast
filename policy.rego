@@ -3,21 +3,18 @@ package cbomkit.policy
 # -----------------------------------------------------------------------------
 # Base Policy Posture
 # -----------------------------------------------------------------------------
-default allow := false
+default allow = false
 
-allow if {
+allow {
     count(violation) == 0
 }
 
 # -----------------------------------------------------------------------------
 # Post-Quantum Cryptography (PQC) Evaluation Rules
 # -----------------------------------------------------------------------------
-# Iterate through the ingested CBOM components. If we detect legacy OpenSSL 
-# primitives, we generate a violation message.
-
+# Iterate through the ingested CBOM components using standard index assignment [_]
 violation[msg] {
-    # Traverse the input JSON array (e.g., input.components)
-    some component in input.components
+    component := input.components[_]
     
     # Match against the static analysis rule ID triggered by our Java scanner
     component.ruleId == "CPP_OPENSSL_EVP_ENCRYPT"

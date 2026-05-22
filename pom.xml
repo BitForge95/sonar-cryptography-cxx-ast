@@ -17,15 +17,23 @@
     </properties>
 
     <dependencies>
-        <!-- 
-          Using the Joern mirror of eclipse-cdt-core. 
-          Standard Eclipse P2 repos require Tycho and OSGi overhead. 
-          This mirror isolates just the headless AST parser, perfect for our CLI-based analysis.
-        -->
+        <!-- The Joern mirror of eclipse-cdt-core -->
         <dependency>
             <groupId>io.joern</groupId>
             <artifactId>eclipse-cdt-core</artifactId>
             <version>8.5.0.202410191453+2</version>
+        </dependency>
+
+        <!-- Explicitly include Eclipse Core Runtime to resolve CoreException in headless mode -->
+        <dependency>
+            <groupId>org.eclipse.platform</groupId>
+            <artifactId>org.eclipse.core.runtime</artifactId>
+            <version>3.26.100</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.platform</groupId>
+            <artifactId>org.eclipse.equinox.common</artifactId>
+            <version>3.17.0</version>
         </dependency>
     </dependencies>
 

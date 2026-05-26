@@ -141,6 +141,42 @@ Pipeline will:
 
 ---
 
+# 📸 Example Pipeline Output
+
+## AST Scanner → CycloneDX CBOM Generation
+
+Example terminal output showing:
+
+- Maven build execution
+- AST scan
+- CycloneDX CBOM generation
+- detected OpenSSL and Botan cryptographic APIs
+
+![Terminal Output](./img/Ter_output.png)
+
+---
+
+## OPA Policy Evaluation Result
+
+Generated CBOM artifacts are validated against OPA policies enforcing PQC readiness and cryptographic compliance.
+
+Example evaluation output:
+
+![OPA Output](./img/OPA_output.png)
+
+Example successful response:
+
+```json
+{
+  "allow": true,
+  "violation": []
+}
+```
+
+This indicates no policy violations were triggered under current policy rules.
+
+---
+
 ## 3. Example policy output
 
 ```json
